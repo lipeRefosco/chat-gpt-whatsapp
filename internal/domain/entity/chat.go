@@ -6,22 +6,22 @@ import (
 	"github.com/google/uuid"
 )
 
-type Status int64
+type Status string
 
 const (
-	Ended  Status = 0
-	Active Status = 1
+	Ended  Status = "ended"
+	Active Status = "active"
 )
 
 type ChatConfig struct {
-	Model           *Model
-	Temperature     float32  // 0.0 to 1.0 - lower is more precise and higher is more creative
-	TopP            float32  // 0.0. to 1.0 - to a low value, like 0.1 model will be very conservative in
-	N               int      //Number of messages to generate
-	Stop            []string // list of tokens to stop on
-	MaxTokens       int      // number of tokens to generate
-	PresencePenalty float32  // -2.0 to 2.0 - number between -2.9 and 2.0. Positive values penalize new tokens
-	FrequecyPenalty float32  // -2.0 to 2.0 - number between -2.9 and 2.0. Positive values penalize new tokens
+	Model            *Model
+	Temperature      float32  // 0.0 to 1.0 - lower is more precise and higher is more creative
+	TopP             float32  // 0.0. to 1.0 - to a low value, like 0.1 model will be very conservative in
+	N                int      //Number of messages to generate
+	Stop             []string // list of tokens to stop on
+	MaxTokens        int      // number of tokens to generate
+	PresencePenalty  float32  // -2.0 to 2.0 - number between -2.9 and 2.0. Positive values penalize new tokens
+	FrequencyPenalty float32  // -2.0 to 2.0 - number between -2.9 and 2.0. Positive values penalize new tokens
 }
 
 type Chat struct {
@@ -45,7 +45,7 @@ func (c *Chat) Validate() error {
 	}
 
 	if c.Config.Temperature < 0 || c.Config.Temperature > 2 {
-		return errors.New("invalid tempeture")
+		return errors.New("invalid temperature")
 	}
 
 	// ... more validations for config
