@@ -10,7 +10,7 @@ services:
       - .:/go/src
     ports:
       - "8080:8080" # porta da aplicação
-      - "50052:50051" # porta do gRPC
+      - "50051:50051" # porta do gRPC
 
   mysql:
     image: mysql:8

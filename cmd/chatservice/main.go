@@ -6,10 +6,12 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/lipeRefosco/chat-gpt-whatsapp/configs"
+	"github.com/lipeRefosco/chat-gpt-whatsapp/internal/infra/grpc/server"
 	"github.com/lipeRefosco/chat-gpt-whatsapp/internal/infra/repository"
 	"github.com/lipeRefosco/chat-gpt-whatsapp/internal/infra/web"
 	"github.com/lipeRefosco/chat-gpt-whatsapp/internal/infra/web/webserver"
 	"github.com/lipeRefosco/chat-gpt-whatsapp/internal/usecase/chatcompletion"
+	"github.com/lipeRefosco/chat-gpt-whatsapp/internal/usecase/chatcompletionstream"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -41,21 +43,25 @@ func main() {
 		InitialSystemMessage: configs.InitialChatMessage,
 	}
 
-	// chatConfigStream := chatcompletion.ChatCompletionConfigInputDTO{
-	// 	Model:                configs.Model,
-	// 	ModelMaxTokens:       configs.ModelMaxTokens,
-	// 	Temperature:          float32(configs.Temperature),
-	// 	TopP:                 float32(configs.TopP),
-	// 	N:                    configs.N,
-	// 	Stop:                 configs.Stop,
-	// 	MaxTokens:            configs.MaxTokens,
-	// 	InitialSystemMessage: configs.InitialChatMessage,
-	// }
+	chatConfigStream := chatcompletionstream.ChatCompletionConfigInputDTO{
+		Model:                configs.Model,
+		ModelMaxTokens:       configs.ModelMaxTokens,
+		Temperature:          float32(configs.Temperature),
+		TopP:                 float32(configs.TopP),
+		N:                    configs.N,
+		Stop:                 configs.Stop,
+		MaxTokens:            configs.MaxTokens,
+		InitialSystemMessage: configs.InitialChatMessage,
+	}
 
 	usecase := chatcompletion.NewChatCompletionUseCase(repo, client)
 
-	// streamChannel := make(chan chatcompletionstream.ChatCompletionOutputDTO)
-	// usecaseStream := chatcompletionstream.NewChatCompletionUSeCase(repo, client, streamChannel)
+	streamChannel := make(chan chatcompletionstream.ChatCompletionOutputDTO)
+	usecaseStream := chatcompletionstream.NewChatCompletionUseCase(repo, client, streamChannel)
+
+	grpcServer := server.NewGRPCServer(*usecaseStream, chatConfigStream, configs.GRPCServerPort, configs.AuthToken, streamChannel)
+	fmt.Println("gRPC runnin on port " + configs.GRPCServerPort)
+	go grpcServer.Start()
 
 	webserver, err := webserver.NewWebServer(":" + configs.WebServerPort)
 	if err != nil {
