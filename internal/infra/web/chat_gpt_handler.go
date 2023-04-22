@@ -28,7 +28,8 @@ func (h *WebChatGPTHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Header.Get("Autorization") != h.AuthToken {
+	// TODO: change to enums
+	if r.Header.Get("Authorization") != h.AuthToken {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
