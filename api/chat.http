@@ -30,3 +30,27 @@ Authorization: 123456
     "user_id": "1",
     "user_message": "continue"
 }
+
+###
+
+POST http://localhost:8080/chat HTTP/1.1
+Content-Type: application/json
+Authorization: 123456
+
+{
+    "chat_id": "cdee4fd7-8e4d-40ff-b312-6275dae76556",
+    "user_id": "1",
+    "user_message": "Qual a melhor arquitetura para um software web?"
+}
+
+###
+
+POST http://localhost:8080/chat HTTP/1.1
+Content-Type: application/json
+Authorization: 123456
+
+{
+    "chat_id": "cdee4fd7-8e4d-40ff-b312-6275dae76556",
+    "user_id": "1",
+    "user_message": "Quantas mensagens eu já te enviei?"
+}
