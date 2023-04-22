@@ -27,7 +27,7 @@ func LoadConfig(path string) (*conf, error) {
 	var cfg *conf
 
 	viper.SetConfigName("app_config")
-	viper.SetConfigFile("env")
+	viper.SetConfigType("env")
 	viper.AddConfigPath(path)
 	viper.SetConfigFile(".env")
 	viper.AutomaticEnv()
