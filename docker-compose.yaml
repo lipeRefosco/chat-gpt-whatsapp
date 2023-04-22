@@ -3,6 +3,15 @@ version: '3'
 # TODO: verificar se está criando os volumes
 
 services:
+  chatservice:
+    build: .
+    container_name: chatservice__app
+    volumes:
+      - .:/go/src
+    ports:
+      - "8080:8080" # porta da aplicação
+      - "50052:50051" # porta do gRPC
+
   mysql:
     image: mysql:8
     container_name: mysql
