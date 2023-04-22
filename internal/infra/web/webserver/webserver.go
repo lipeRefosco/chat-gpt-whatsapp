@@ -16,6 +16,8 @@ type WebServer struct {
 func NewWebServer(webServerPort string) (*WebServer, error) {
 	return &WebServer{
 		WebServerPort: webServerPort,
+		Router:        chi.NewRouter(),
+		Handlers:      make(map[string]http.HandlerFunc),
 	}, nil
 }
 
@@ -26,7 +28,7 @@ func (s *WebServer) AddHandler(path string, handler http.HandlerFunc) {
 func (s *WebServer) Start() {
 	s.Router.Use(middleware.Logger)
 	for path, handler := range s.Handlers {
-		s.Router.Get(path, handler)
+		s.Router.Post(path, handler)
 	}
 	if err := http.ListenAndServe(s.WebServerPort, s.Router); err != nil {
 		panic(err.Error())
