@@ -29,7 +29,7 @@ func (r *ChatRepositoryMySQL) CreateChat(ctx context.Context, chat *entity.Chat)
 			ID:               chat.ID,
 			UserID:           chat.UserID,
 			InitialMessageID: chat.InitialSystemMessage.Content,
-			Status:           string(chat.Status),
+			Status:           chat.Status,
 			TokenUsage:       int32(chat.TokenUsage),
 			Model:            chat.Config.Model.Name,
 			ModelMaxTokens:   int32(chat.Config.Model.MaxTokens),
@@ -54,12 +54,11 @@ func (r *ChatRepositoryMySQL) CreateChat(ctx context.Context, chat *entity.Chat)
 			ID:        chat.InitialSystemMessage.ID,
 			ChatID:    chat.ID,
 			Content:   chat.InitialSystemMessage.Content,
-			Role:      string(chat.InitialSystemMessage.Role),
+			Role:      chat.InitialSystemMessage.Role,
 			Tokens:    int32(chat.InitialSystemMessage.Tokens),
 			CreatedAt: chat.InitialSystemMessage.CreatedAt,
 		},
 	)
-
 	if err != nil {
 		return err
 	}
@@ -70,14 +69,12 @@ func (r *ChatRepositoryMySQL) CreateChat(ctx context.Context, chat *entity.Chat)
 func (r *ChatRepositoryMySQL) FindChatByID(ctx context.Context, chatID string) (*entity.Chat, error) {
 	chat := &entity.Chat{}
 	res, err := r.Queries.FindChatByID(ctx, chatID)
-
 	if err != nil {
 		return nil, errors.New("chat not found")
 	}
-
 	chat.ID = res.ID
 	chat.UserID = res.UserID
-	chat.Status = entity.Status(res.Status)
+	chat.Status = res.Status
 	chat.TokenUsage = int(res.TokenUsage)
 	chat.Config = &entity.ChatConfig{
 		Model: &entity.Model{
@@ -95,14 +92,14 @@ func (r *ChatRepositoryMySQL) FindChatByID(ctx context.Context, chatID string) (
 
 	messages, err := r.Queries.FindMessagesByChatID(ctx, chatID)
 	if err != nil {
-		return nil, errors.New("messages not found")
+		return nil, err
 	}
 
 	for _, message := range messages {
 		chat.Messages = append(chat.Messages, &entity.Message{
 			ID:        message.ID,
-			Role:      entity.Role(message.Role),
 			Content:   message.Content,
+			Role:      message.Role,
 			Tokens:    int(message.Tokens),
 			Model:     &entity.Model{Name: message.Model},
 			CreatedAt: message.CreatedAt,
@@ -111,20 +108,18 @@ func (r *ChatRepositoryMySQL) FindChatByID(ctx context.Context, chatID string) (
 
 	erasedMessages, err := r.Queries.FindErasedMessagesByChatID(ctx, chatID)
 	if err != nil {
-		return nil, errors.New("not found erased messages")
+		return nil, err
 	}
-
-	for _, erasedMessage := range erasedMessages {
+	for _, message := range erasedMessages {
 		chat.ErasedMessages = append(chat.ErasedMessages, &entity.Message{
-			ID:        erasedMessage.ID,
-			Role:      entity.Role(erasedMessage.Role),
-			Content:   erasedMessage.Content,
-			Tokens:    int(erasedMessage.Tokens),
-			Model:     &entity.Model{Name: erasedMessage.Model},
-			CreatedAt: erasedMessage.CreatedAt,
+			ID:        message.ID,
+			Content:   message.Content,
+			Role:      message.Role,
+			Tokens:    int(message.Tokens),
+			Model:     &entity.Model{Name: message.Model},
+			CreatedAt: message.CreatedAt,
 		})
 	}
-
 	return chat, nil
 }
 
@@ -132,7 +127,7 @@ func (r *ChatRepositoryMySQL) SaveChat(ctx context.Context, chat *entity.Chat) e
 	params := db.SaveChatParams{
 		ID:               chat.ID,
 		UserID:           chat.UserID,
-		Status:           string(chat.Status),
+		Status:           chat.Status,
 		TokenUsage:       int32(chat.TokenUsage),
 		Model:            chat.Config.Model.Name,
 		ModelMaxTokens:   int32(chat.Config.Model.MaxTokens),
@@ -172,7 +167,7 @@ func (r *ChatRepositoryMySQL) SaveChat(ctx context.Context, chat *entity.Chat) e
 				ID:        message.ID,
 				ChatID:    chat.ID,
 				Content:   message.Content,
-				Role:      string(message.Role),
+				Role:      message.Role,
 				Tokens:    int32(message.Tokens),
 				Model:     chat.Config.Model.Name,
 				CreatedAt: message.CreatedAt,
@@ -194,7 +189,7 @@ func (r *ChatRepositoryMySQL) SaveChat(ctx context.Context, chat *entity.Chat) e
 				ID:        message.ID,
 				ChatID:    chat.ID,
 				Content:   message.Content,
-				Role:      string(message.Role),
+				Role:      message.Role,
 				Tokens:    int32(message.Tokens),
 				Model:     chat.Config.Model.Name,
 				CreatedAt: message.CreatedAt,

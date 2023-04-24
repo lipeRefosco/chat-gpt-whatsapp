@@ -59,14 +59,18 @@ func main() {
 	streamChannel := make(chan chatcompletionstream.ChatCompletionOutputDTO)
 	usecaseStream := chatcompletionstream.NewChatCompletionUseCase(repo, client, streamChannel)
 
-	grpcServer := server.NewGRPCServer(*usecaseStream, chatConfigStream, configs.GRPCServerPort, configs.AuthToken, streamChannel)
+	grpcServer := server.NewGRPCServer(
+		*usecaseStream,
+		chatConfigStream,
+		configs.GRPCServerPort,
+		configs.AuthToken,
+		streamChannel,
+	)
 	fmt.Println("gRPC runnin on port " + configs.GRPCServerPort)
 	go grpcServer.Start()
 
-	webserver, err := webserver.NewWebServer(":" + configs.WebServerPort)
-	if err != nil {
-		panic(err)
-	}
+	webserver := webserver.NewWebServer(":" + configs.WebServerPort)
+
 	webserverChatHandler := web.NewWebChatGPTHandler(*usecase, chatConfig, configs.AuthToken)
 	webserver.AddHandler("/chat", webserverChatHandler.Handle)
 

@@ -76,7 +76,7 @@ func (uc *ChatCompletionUseCase) Execute(ctx context.Context, input ChatCompleti
 	messages := []openai.ChatCompletionMessage{}
 	for _, msg := range chat.Messages {
 		messages = append(messages, openai.ChatCompletionMessage{
-			Role:    string(msg.Role),
+			Role:    msg.Role,
 			Content: msg.Content,
 		})
 	}

@@ -8,26 +8,17 @@ import (
 	tiktoken_go "github.com/j178/tiktoken-go"
 )
 
-type Role string
-
-const (
-	User      Role = "user"
-	System    Role = "system"
-	Assistant Role = "assistant"
-)
-
 type Message struct {
 	ID        string
-	Role      Role
+	Role      string
 	Content   string
 	Tokens    int
 	Model     *Model
 	CreatedAt time.Time
 }
 
-func NewMessage(role Role, content string, model *Model) (*Message, error) {
+func NewMessage(role, content string, model *Model) (*Message, error) {
 	totalTokens := tiktoken_go.CountTokens(model.GetModelName(), content)
-
 	msg := &Message{
 		ID:        uuid.New().String(),
 		Role:      role,
@@ -36,27 +27,22 @@ func NewMessage(role Role, content string, model *Model) (*Message, error) {
 		Model:     model,
 		CreatedAt: time.Now(),
 	}
-
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
-
 	return msg, nil
 }
 
 func (m *Message) Validate() error {
-	if m.Role != User && m.Role != System && m.Role != Assistant {
+	if m.Role != "user" && m.Role != "system" && m.Role != "assistant" {
 		return errors.New("invalid role")
 	}
-
 	if m.Content == "" {
 		return errors.New("content is empty")
 	}
-
 	if m.CreatedAt.IsZero() {
 		return errors.New("invalid created at")
 	}
-
 	return nil
 }
 

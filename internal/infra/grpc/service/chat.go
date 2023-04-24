@@ -31,7 +31,6 @@ func (c *ChatService) ChatStream(req *pb.ChatRequest, stream pb.ChatService_Chat
 		MaxTokens:            c.ChatConfigStream.MaxTokens,
 		InitialSystemMessage: c.ChatConfigStream.InitialSystemMessage,
 	}
-
 	input := chatcompletionstream.ChatCompletionInputDTO{
 		UserMessage: req.GetUserMessage(),
 		UserID:      req.GetUserId(),
@@ -40,7 +39,6 @@ func (c *ChatService) ChatStream(req *pb.ChatRequest, stream pb.ChatService_Chat
 	}
 
 	ctx := stream.Context()
-
 	go func() {
 		for msg := range c.StreamChannel {
 			stream.Send(&pb.ChatResponse{

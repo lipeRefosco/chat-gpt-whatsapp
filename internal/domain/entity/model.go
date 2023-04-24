@@ -5,7 +5,6 @@ type Model struct {
 	MaxTokens int
 }
 
-// Isso é um construtor
 func NewModel(name string, maxTokens int) *Model {
 	return &Model{
 		Name:      name,
@@ -13,7 +12,6 @@ func NewModel(name string, maxTokens int) *Model {
 	}
 }
 
-// Isso é um método da struct Model
 func (m *Model) GetMaxTokens() int {
 	return m.MaxTokens
 }

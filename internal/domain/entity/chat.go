@@ -6,22 +6,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type Status string
-
-const (
-	Ended  Status = "ended"
-	Active Status = "active"
-)
-
 type ChatConfig struct {
 	Model            *Model
-	Temperature      float32  // 0.0 to 1.0 - lower is more precise and higher is more creative
-	TopP             float32  // 0.0. to 1.0 - to a low value, like 0.1 model will be very conservative in
-	N                int      //Number of messages to generate
+	Temperature      float32  // 0.0 to 1.0
+	TopP             float32  // 0.0 to 1.0 - to a low value, like 0.1, the model will be very conservative in its word choices, and will tend to generate relatively predictable prompts
+	N                int      // number of messages to generate
 	Stop             []string // list of tokens to stop on
 	MaxTokens        int      // number of tokens to generate
-	PresencePenalty  float32  // -2.0 to 2.0 - number between -2.9 and 2.0. Positive values penalize new tokens
-	FrequencyPenalty float32  // -2.0 to 2.0 - number between -2.9 and 2.0. Positive values penalize new tokens
+	PresencePenalty  float32  // -2.0 to 2.0 - Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
+	FrequencyPenalty float32  // -2.0 to 2.0 - Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, increasing the model's likelihood to talk about new topics.
 }
 
 type Chat struct {
@@ -30,26 +23,9 @@ type Chat struct {
 	InitialSystemMessage *Message
 	Messages             []*Message
 	ErasedMessages       []*Message
-	Status               Status
+	Status               string
 	TokenUsage           int
 	Config               *ChatConfig
-}
-
-func (c *Chat) Validate() error {
-	if c.UserID == "" {
-		return errors.New("user id is empty")
-	}
-
-	if c.Status != Active && c.Status != Ended {
-		return errors.New("invalid status")
-	}
-
-	if c.Config.Temperature < 0 || c.Config.Temperature > 2 {
-		return errors.New("invalid temperature")
-	}
-
-	// ... more validations for config
-	return nil
 }
 
 func NewChat(userID string, initialSystemMessage *Message, chatConfig *ChatConfig) (*Chat, error) {
@@ -57,36 +33,46 @@ func NewChat(userID string, initialSystemMessage *Message, chatConfig *ChatConfi
 		ID:                   uuid.New().String(),
 		UserID:               userID,
 		InitialSystemMessage: initialSystemMessage,
-		Status:               Active,
+		Status:               "active",
 		Config:               chatConfig,
 		TokenUsage:           0,
 	}
-
 	chat.AddMessage(initialSystemMessage)
 
 	if err := chat.Validate(); err != nil {
 		return nil, err
 	}
-
 	return chat, nil
 }
 
+func (c *Chat) Validate() error {
+	if c.UserID == "" {
+		return errors.New("user id is empty")
+	}
+	if c.Status != "active" && c.Status != "ended" {
+		return errors.New("invalid status")
+	}
+	if c.Config.Temperature < 0 || c.Config.Temperature > 2 {
+		return errors.New("invalid temperature")
+	}
+	// ... more validations for config
+	return nil
+}
+
 func (c *Chat) AddMessage(m *Message) error {
-	if c.Status == Ended {
+	if c.Status == "ended" {
 		return errors.New("chat is ended. no more messages allowed")
 	}
-
 	for {
 		if c.Config.Model.GetMaxTokens() >= m.GetQtdTokens()+c.TokenUsage {
 			c.Messages = append(c.Messages, m)
 			c.RefreshTokenUsage()
 			break
 		}
-		c.ErasedMessages = append(c.ErasedMessages, c.Messages[0]) // Guarda a mensagem mais antiga
-		c.Messages = c.Messages[1:]                                // Remove a mensagem mais antiga da lista de mensagens
+		c.ErasedMessages = append(c.ErasedMessages, c.Messages[0])
+		c.Messages = c.Messages[1:]
 		c.RefreshTokenUsage()
 	}
-
 	return nil
 }
 
@@ -99,7 +85,7 @@ func (c *Chat) CountMessages() int {
 }
 
 func (c *Chat) End() {
-	c.Status = Ended
+	c.Status = "ended"
 }
 
 func (c *Chat) RefreshTokenUsage() {

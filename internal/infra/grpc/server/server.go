@@ -41,7 +41,7 @@ func (g *GRPCServer) AuthInterceptor(srv interface{}, ss grpc.ServerStream, info
 		return status.Error(codes.Unauthenticated, "metadata is not provided")
 	}
 
-	token := md.Get("authorization")
+	token := md.Get("Authorization")
 	if len(token) == 0 {
 		return status.Error(codes.Unauthenticated, "authorization token is not provided")
 	}
@@ -54,10 +54,10 @@ func (g *GRPCServer) AuthInterceptor(srv interface{}, ss grpc.ServerStream, info
 }
 
 func (g *GRPCServer) Start() error {
-	opts := []grpc.ServerOption{
-		grpc.StreamInterceptor(g.AuthInterceptor),
-	}
-	grpcServer := grpc.NewServer(opts...)
+	// opts := []grpc.ServerOption{
+	// 	grpc.StreamInterceptor(g.AuthInterceptor),
+	// }
+	grpcServer := grpc.NewServer() //opts...)
 	pb.RegisterChatServiceServer(grpcServer, &g.ChatService)
 	reflection.Register(grpcServer)
 

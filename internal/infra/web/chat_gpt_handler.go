@@ -28,7 +28,6 @@ func (h *WebChatGPTHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: change to enums
 	if r.Header.Get("Authorization") != h.AuthToken {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -41,7 +40,7 @@ func (h *WebChatGPTHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !json.Valid(body) {
-		http.Error(w, "invalid Json", http.StatusBadRequest)
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 
@@ -52,12 +51,12 @@ func (h *WebChatGPTHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	dto.Config = h.Config
+
 	result, err := h.CompletionUseCase.Execute(r.Context(), dto)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
